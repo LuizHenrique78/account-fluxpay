@@ -1,14 +1,13 @@
-from fastapi import FastAPI
+from utilities.depency_injections.injection_manager import InjectionManager
 
 from utilities.frameworks.deployment_decorator import deployable
 
 from src.application.schemas.acchount_schema import AccountSchema, GetAccountSchema
+from src.config.dependency_start import start_dependencies
 from src.domain.use_cases.account_use_case import AccountUseCase
 
-app = FastAPI()
-
-
-account_use_case = AccountUseCase()
+start_dependencies()
+account_use_case = InjectionManager.get_dependency(AccountUseCase)
 
 @deployable(["cloudfunction", "fastapi"], methods=["POST"], schema_cls=AccountSchema, source="json", route="/accounts")
 def create_account(account_schema: AccountSchema):

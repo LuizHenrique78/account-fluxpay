@@ -1,13 +1,14 @@
 import datetime
 
 from google.cloud import firestore
+from utilities.depency_injections.injection_manager import utilities_injections
 from utilities.frameworks.base_entity.base_entity import BaseEntity
 
 from src.domain.entity.account import Account, AccountStatus
 from src.infra.exceptions.repositories.account_repository_exceptions import AccountNotFoundRepositoryException, \
     AccountStatusRepositoryException
 
-
+@utilities_injections
 class AccountRepository:
     def __init__(self, collection_name: str):
         # Initialize the Firestore client
