@@ -1,0 +1,57 @@
+steps:
+- name: gcr.io/cloud-builders/gcloud
+  id: Generate requirements.txt
+  entrypoint: bash
+  args:
+  - -c
+  - "\n        echo \"\U0001F527 Atualizando requirements.txt com token privado...\"\
+    \n        # Garante que o arquivo termina com newline para evitar concatena\xE7\
+    \xE3o errada\n        sed -i -e '$a\\' requirements.txt\n        # Remove linha\
+    \ antiga da lib privada (se existir)\n        sed -i '/git+https:\\/\\/github.com\\\
+    /LuizHenrique78\\/utilities.git/d' requirements.txt\n        # Adiciona a linha\
+    \ com token\n        echo \"git+https://${_GITHUB_TOKEN}@github.com/LuizHenrique78/utilities.git@1.0.2#egg=utilities\"\
+    \ >> requirements.txt\n        "
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - functions
+  - deploy
+  - get_account
+  - --region=us-central1
+  - --runtime=python311
+  - --source=.
+  - --entry-point=function_get_account
+  - --trigger-http
+  - --set-env-vars=TARGET=cloudfunction
+  - --timeout=540s
+  - --allow-unauthenticated
+  id: Deploy get_account
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - functions
+  - deploy
+  - create_account
+  - --region=us-central1
+  - --runtime=python311
+  - --source=.
+  - --entry-point=function_create_account
+  - --trigger-http
+  - --set-env-vars=TARGET=cloudfunction
+  - --timeout=540s
+  - --allow-unauthenticated
+  id: Deploy create_account
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - functions
+  - deploy
+  - update_status
+  - --region=us-central1
+  - --runtime=python311
+  - --source=.
+  - --entry-point=function_update_status
+  - --trigger-http
+  - --set-env-vars=TARGET=cloudfunction
+  - --timeout=540s
+  - --allow-unauthenticated
+  id: Deploy update_status
+options:
+  logging: CLOUD_LOGGING_ONLY
