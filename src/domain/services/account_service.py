@@ -55,7 +55,7 @@ class AccountService:
         """
         if account_data.id is not None:
             logger.warning(f"ID should not be provided when creating a new account")
-            raise AccountServiceValidationException(f"cannot create account with id {account_data.id}")
+            return ErrorResponse(message=f"cannot create account with id {account_data.id}", status_code=500, process=self._process)
 
         account_with_id = account_data.generate_ulid()
         id = self.account_repository.create(account_with_id)
