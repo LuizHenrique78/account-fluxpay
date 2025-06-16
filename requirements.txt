@@ -1,0 +1,13 @@
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+pymongo[srv]==4.9.2
+certifi>=2024.2.2
+kink==0.8.0
+redis==5.0.7
+motor==3.7.0
+Flask==3.1.1
+fastapi==0.115.12
+uvicorn==0.34.3
+google-cloud-firestore==2.21.0
+mangum==0.17.0
+git+https://${GITHUB_TOKEN}@github.com/LuizHenrique78/utilities.git@1.1.4#egg=utilities
