@@ -1,39 +1,116 @@
 from utilities.cross_cutting.application.routers.http_response_adapter import to_gcp_http_response
 from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
 from utilities.depency_injections.injection_manager import InjectionManager
-
 from utilities.frameworks.deployment_decorator import deployable
 
 from src.application.schemas.acchount_schema import AccountSchema, GetAccountSchema, UpdateStatusAccountSchema
 from src.config.dependency_start import start_account_dependencies
 from src.application.use_cases.account_use_case import AccountUseCase
 
+# Initialize dependency injection for the application
 start_account_dependencies()
-
 account_use_case = InjectionManager.get_dependency(AccountUseCase)
 
 
-@deployable(["cloudfunction", "fastapi"], methods=["POST"], schema_cls=AccountSchema, source="json", route="/accounts/create")
+@deployable(
+    ["cloudfunction", "fastapi"],
+    methods=["POST"],
+    schema_cls=AccountSchema,
+    source="json",
+    route="/accounts/create"
+)
 def create_account(account_schema: AccountSchema):
     """
-    Create a new account.
+    Endpoint to create a new account.
+
+    Supported Deployment Types:
+        - Google Cloud Function
+        - FastAPI
+
+    HTTP Method:
+        POST
+
+    Route:
+        fastapi: /accounts/create
+        cloud-function: /create_account
+
+    Request Body:
+        AccountSchema: Contains tenant_id and owner_id.
+
+    Response:
+        SuccessResponse: Account created successfully.
+        ErrorResponse: In case of validation or persistence failure.
     """
-    response: SuccessResponse | ErrorResponse  = account_use_case.create_account(account_schema)
+    response: SuccessResponse | ErrorResponse = account_use_case.create_account(account_schema)
     return to_gcp_http_response(response)
 
-@deployable(["cloudfunction", "fastapi"], methods=["GET"], schema_cls=GetAccountSchema, source="args", route="/accounts/get")
+
+@deployable(
+    ["cloudfunction", "fastapi"],
+    methods=["GET"],
+    schema_cls=GetAccountSchema,
+    source="args",
+    route="/accounts/get"
+)
 def get_account(get_schema: GetAccountSchema):
     """
-    Get account by ID.
+    Endpoint to retrieve an account by ID.
+
+    Supported Deployment Types:
+        - Google Cloud Function
+        - FastAPI
+
+    HTTP Method:
+        GET
+
+    Route:
+        fastapi: /accounts/get
+        cloud-function: /get_account
+
+    Query Parameters:
+        GetAccountSchema: Contains the account_id.
+
+    Response:
+        SuccessResponse: Returns the Account object if found.
+        ErrorResponse: If the account does not exist.
     """
-    response: SuccessResponse | ErrorResponse  = account_use_case.get_account(get_schema.account_id)
+    response: SuccessResponse | ErrorResponse = account_use_case.get_account(get_schema.account_id)
     return to_gcp_http_response(response)
 
 
-@deployable(["cloudfunction", "fastapi"], methods=["PATCH"], schema_cls=UpdateStatusAccountSchema, source="json", route="/accounts/update_status")
+@deployable(
+    ["cloudfunction", "fastapi"],
+    methods=["PATCH"],
+    schema_cls=UpdateStatusAccountSchema,
+    source="json",
+    route="/accounts/update_status"
+)
 def update_status(update_status_schema: UpdateStatusAccountSchema):
     """
-    Update the status of an account.
+    Endpoint to update the status of an existing account.
+
+    Supported Deployment Types:
+        - Google Cloud Function
+        - FastAPI
+
+    HTTP Method:
+        PATCH
+
+    Route:
+        fastapi: /accounts/update_status
+        cloud-function: /update_status
+
+    Request Body:
+        UpdateStatusAccountSchema: Contains account_id, target status, and optional reason.
+
+    Business Rules:
+        - ACTIVE → SUSPENDED / CLOSED
+        - SUSPENDED → ACTIVE / CLOSED
+        - CLOSED → ❌ No transitions allowed.
+
+    Response:
+        SuccessResponse: If status update is successful.
+        ErrorResponse: If validation fails or update is not allowed.
     """
     response: SuccessResponse | ErrorResponse = account_use_case.update_status(update_status_schema)
     return to_gcp_http_response(response)

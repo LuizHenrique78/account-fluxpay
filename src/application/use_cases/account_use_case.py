@@ -9,40 +9,67 @@ from src.domain.services.account_service import AccountService
 @utilities_injections
 class AccountUseCase:
     """
-    Use case class responsible for account-related business logic,
-    including creation, retrieval, and status updates.
+    Application Use Case layer for Account operations.
+
+    Responsibilities:
+    - Handle API-level business logic.
+    - Map request schemas to domain entities.
+    - Call domain services.
+    - Format and wrap responses.
+
+    Features:
+    - Account creation.
+    - Account retrieval.
+    - Account status updates with validation.
     """
 
     def __init__(self, account_service: AccountService):
         """
-        Initializes the AccountUseCase with a given account repository.
+        Initializes the AccountUseCase with the required service dependency.
 
-        :param account_service: A repository for managing Firestore Account persistence.
+        Args:
+            account_service (AccountService): Domain service handling business logic for accounts.
         """
         self.account_service = account_service
         self._process = Process("use_case")
 
     def create_account(self, account_data: AccountSchema) -> SuccessResponse | ErrorResponse:
         """
-        Creates a new account with ACTIVE status.
+        Creates a new account with default status ACTIVE.
 
-        :param account_data: AccountSchema object containing tenant_id and owner_id.
-        :return: The created Account object.
+        Business Rules:
+        - New accounts always start as ACTIVE.
+        - The caller provides only tenant_id and owner_id.
+
+        Args:
+            account_data (AccountSchema): Input data for account creation.
+
+        Returns:
+            SuccessResponse: If account creation succeeds.
+            ErrorResponse: If creation fails due to validation or persistence issues.
         """
-        account_data = Account(tenant_id=account_data.tenant_id, owner_id=account_data.owner_id, status=AccountStatus.ACTIVE)
-        account: Account | ErrorResponse  = self.account_service.create_account(account_data)
+        account_data = Account(
+            tenant_id=account_data.tenant_id,
+            owner_id=account_data.owner_id,
+            status=AccountStatus.ACTIVE
+        )
+        account: Account | ErrorResponse = self.account_service.create_account(account_data)
 
         if isinstance(account, Account):
             return SuccessResponse(status_code=200, data=account, message="Account created successfully")
 
         return account
 
-    def get_account(self, account_id: str)-> SuccessResponse | ErrorResponse:
+    def get_account(self, account_id: str) -> SuccessResponse | ErrorResponse:
         """
         Retrieves an account by its ID.
 
-        :param account_id: The unique identifier of the account.
-        :return: Account object if found, otherwise None.
+        Args:
+            account_id (str): The unique identifier of the account.
+
+        Returns:
+            SuccessResponse: If the account exists.
+            ErrorResponse: If the account is not found.
         """
         account: Account | ErrorResponse = self.account_service.get_account(account_id)
 
@@ -53,32 +80,29 @@ class AccountUseCase:
 
     def update_status(self, update_status_schema: UpdateStatusAccountSchema) -> SuccessResponse | ErrorResponse:
         """
-        Update the status of an account according to business rules.
+        Updates the status of an account, enforcing all business rules.
 
-        Allowed status transitions:
-        - From ACTIVE:
-            - ✅ Can move to SUSPENDED (reason optional)
-            - ✅ Can move to CLOSED (reason optional)
-        - From SUSPENDED:
-            - ✅ Can move to ACTIVE (reactivation, reason optional)
-            - ✅ Can move to CLOSED (reason required)
-        - From CLOSED:
-            - ❌ Cannot change status (any attempt will raise exception)
+        Allowed Status Transitions:
+            From ACTIVE:
+                - ✅ To SUSPENDED (reason optional)
+                - ✅ To CLOSED (reason optional)
+            From SUSPENDED:
+                - ✅ To ACTIVE (reason optional)
+                - ✅ To CLOSED (reason recommended)
+            From CLOSED:
+                - ❌ No further transitions allowed.
 
-        Additional validation rules:
-        - Updating to the same current status is not allowed (will raise exception).
-        - Closing a SUSPENDED account requires a reason (will raise exception if missing).
+        Validation Rules:
+        - Cannot update to the same status.
+        - Closing a SUSPENDED account should ideally have a reason.
+        - Business rules enforced at the service layer.
 
         Args:
             update_status_schema (UpdateStatusAccountSchema): Contains `account_id`, target `status`, and optional `reason`.
 
-        Raises:
-            AccountUseCaseInvalidStatusException: If the status transition is not allowed,
-                                                  if trying to close without reason,
-                                                  or if status remains the same.
-
         Returns:
-            Account | None: The updated Account object if successful, or None if update failed.
+            SuccessResponse: If status update succeeds.
+            ErrorResponse: If validation fails or update fails.
         """
         account: Account | ErrorResponse = self.account_service.update_status(
             account_id=update_status_schema.account_id,
@@ -86,7 +110,7 @@ class AccountUseCase:
             reason=update_status_schema.reason
         )
 
-        if isinstance(account, SuccessResponse):
-            return SuccessResponse(status_code=200, data=account)
+        if isinstance(account, Account):
+            return SuccessResponse(status_code=200, data=account, message="Account status updated successfully")
 
         return account

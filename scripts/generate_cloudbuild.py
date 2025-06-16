@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+"""
+Script for automatically generating a cloudbuild.yaml file for deploying Google Cloud Functions.
+
+What it does:
+
+1. Scans the project for functions decorated with `@deployable(targets=["cloudfunction"])`.
+2. Generates Cloud Build steps for deploying each Cloud Function.
+3. Adds a step to update the `requirements.txt` with a private GitHub token for private dependency installation.
+4. Outputs the final result as `cloudbuild.yaml`.
+
+Requirements:
+- Project directory structure with Python modules under `src/application/routers`.
+- Functions must use the `@deployable` decorator to be detected.
+"""
 
 import os
 import sys
@@ -7,15 +21,16 @@ import importlib.util
 from pathlib import Path
 import yaml
 
-# Caminho base para os use_cases
+# Base path where use case routers are located
 USE_CASES_PATH = "src/application/routers"
 
+# Base YAML step for Cloud Build deploy
 BASE_YAML_STEP = {
     "name": "gcr.io/cloud-builders/gcloud",
     "args": [],
 }
 
-# Novo step para gerar o requirements.txt com o token
+# Step for updating requirements.txt with GitHub token for private repo
 GENERATE_REQUIREMENTS_STEP = {
     "name": "gcr.io/cloud-builders/gcloud",
     "id": "Generate requirements.txt",
@@ -23,67 +38,78 @@ GENERATE_REQUIREMENTS_STEP = {
     "args": [
         "-c",
         """
-        echo "🔧 Atualizando requirements.txt com token privado..."
-        # Garante que o arquivo termina com newline para evitar concatenação errada
+        echo "🔧 Updating requirements.txt with private token..."
         sed -i -e '$a\\' requirements.txt
-        # Remove linha antiga da lib privada (se existir)
         sed -i '/git+https:\\/\\/github.com\\/LuizHenrique78\\/utilities.git/d' requirements.txt
-        # Adiciona a linha com token
         echo "git+https://${_GITHUB_TOKEN}@github.com/LuizHenrique78/utilities.git@1.0.2#egg=utilities" >> requirements.txt
         """
     ],
 }
 
 
+def import_module_from_path(module_name: str, path: Path):
+    """
+    Dynamically import a Python module from a file path.
 
-def import_module_from_path(module_name, path):
+    Args:
+        module_name (str): Desired module name for Python system modules.
+        path (Path): Absolute path to the Python file.
+
+    Returns:
+        module: The imported Python module.
+    """
     spec = importlib.util.spec_from_file_location(module_name, path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
 
-def find_cloudfunction_methods():
-    cloud_functions = set()  # Usando set para evitar duplicatas
+
+def find_cloudfunction_methods() -> list[str]:
+    """
+    Find all Python functions decorated with `@deployable(targets=["cloudfunction"])`.
+
+    Returns:
+        list[str]: List of function names detected for deployment.
+    """
+    cloud_functions = set()
 
     for file in Path(USE_CASES_PATH).rglob("*.py"):
-        module_name = (
-            str(file)
-            .replace("/", ".")
-            .replace("\\", ".")
-            .replace(".py", "")
-        )
-
-        module = import_module_from_path(module_name, file)
+        module_name = str(file).replace("/", ".").replace("\\", ".").replace(".py", "")
+        try:
+            module = import_module_from_path(module_name, file)
+        except Exception as e:
+            print(f"⚠️ Error importing module '{module_name}': {e}")
+            continue
 
         for name, obj in inspect.getmembers(module, inspect.isfunction):
             targets = getattr(obj, "_deploy_targets", [])
             if "cloudfunction" in targets:
-                cloud_functions.add(name)  # Apenas o nome
+                cloud_functions.add(name)
 
     return list(cloud_functions)
 
-def generate_cloudbuild_yaml(cloud_functions, region="us-central1"):
-    steps = []
 
-    # Adiciona o step para gerar o requirements.txt
-    steps.append(GENERATE_REQUIREMENTS_STEP)
+def generate_cloudbuild_yaml(cloud_functions: list[str], region: str = "us-central1") -> dict:
+    """
+    Generate the structure for the cloudbuild.yaml file with deployment steps for each Cloud Function.
 
-    # Mapeamento manual para definir qual trigger usar
+    Args:
+        cloud_functions (list[str]): List of function names to deploy.
+        region (str): GCP region for deployment.
+
+    Returns:
+        dict: Dictionary ready to be serialized as YAML.
+    """
+    steps = [GENERATE_REQUIREMENTS_STEP]
+
+    # Optional: manual trigger mapping by function name
     trigger_mapping = {
-        "main": {
-            "trigger": "--trigger-topic=transactions.incoming"
-        },
-        "callback": {
-            "trigger": "--trigger-topic=transactions.incoming"
-        },
-        "enqueue_message": {
-            "trigger": "--trigger-topic=transactions.incoming"
-        },
-        "process_batch": {
-            "trigger": "--trigger-topic=transactions.incoming"
-        },
-        # Adicione outros se quiser usar triggers HTTP para outras funções
+        "main": {"trigger": "--trigger-topic=transactions.incoming"},
+        "callback": {"trigger": "--trigger-topic=transactions.incoming"},
+        "enqueue_message": {"trigger": "--trigger-topic=transactions.incoming"},
+        "process_batch": {"trigger": "--trigger-topic=transactions.incoming"},
+        # Others will default to HTTP trigger
     }
 
     for func_name in cloud_functions:
@@ -102,29 +128,34 @@ def generate_cloudbuild_yaml(cloud_functions, region="us-central1"):
             "--timeout=540s",
         ]
 
-        # Se for HTTP, permite acesso público
+        # If it's an HTTP-triggered function, allow public access
         if trigger["trigger"] == "--trigger-http":
             step["args"].append("--allow-unauthenticated")
 
         steps.append(step)
 
-    cloudbuild_yaml = {
+    return {
         "steps": steps,
         "options": {
             "logging": "CLOUD_LOGGING_ONLY"
         }
     }
-    return cloudbuild_yaml
+
 
 def main():
-    print("🔍 Procurando funções decoradas com @deployable('cloudfunction')...")
+    """
+    Main execution function.
+    Responsible for scanning functions and generating the cloudbuild.yaml file.
+    """
+    print("🔍 Searching for functions with target 'cloudfunction'...")
+
     cloud_functions = find_cloudfunction_methods()
 
     if not cloud_functions:
-        print("🚨 Nenhuma função encontrada.")
-        return
+        print("🚨 No functions with target 'cloudfunction' found.")
+        sys.exit(1)
 
-    print(f"✅ Funções encontradas: {cloud_functions}")
+    print(f"✅ Functions found: {cloud_functions}")
 
     cloudbuild_config = generate_cloudbuild_yaml(cloud_functions)
 
@@ -132,7 +163,8 @@ def main():
     with open(output_file, "w") as f:
         yaml.dump(cloudbuild_config, f, sort_keys=False, default_flow_style=False)
 
-    print(f"🎉 Arquivo '{output_file}' gerado com sucesso!")
+    print(f"🎉 File '{output_file}' generated successfully!")
+
 
 if __name__ == "__main__":
     main()

@@ -50,11 +50,11 @@ def test_update_status_active_to_suspend():
 
     response = account_use_case.update_status(schema_update_status)
 
-    response_updated = account_use_case.get_account(response.id)
+    response_updated = account_use_case.get_account(account.id)
 
     assert response is not None
     assert response_updated.status_code == 200
-    assert response_updated.data.id == response.id
+    assert response_updated.data.id == account.id
     assert response_updated.data.status == AccountStatus.SUSPENDED
     assert response_updated.data.suspension_reason == "Testing suspension"
     assert response_updated.data.tenant_id == account.tenant_id

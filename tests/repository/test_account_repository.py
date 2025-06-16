@@ -5,14 +5,13 @@ from utilities.logger.logail_handler import LogtailHandler
 
 from src.config.custom_config import ENVIRONMENT
 from src.domain.entity.account import Account, AccountStatus
-from src.infra.exceptions.repositories.account_repository_exceptions import AccountNotFoundRepositoryException, \
-    AccountStatusRepositoryException, AccountRepositoryValidationException
+
 from src.infra.repositories.account_repository import AccountRepository
 
 
 Logger.setup(LogtailHandler(), ENVIRONMENT.log_level)
 
-account_repository = AccountRepository("account", model_class=Account)
+account_repository = AccountRepository()
 
 def _create_account():
      account = Account(
