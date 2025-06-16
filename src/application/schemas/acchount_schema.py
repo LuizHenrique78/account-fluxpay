@@ -23,3 +23,21 @@ class GetAccountSchema(BaseModel):
     specific to retrieval operations if needed.
     """
     account_id: str
+
+    class Config:
+        validate_assignment = True
+
+
+
+class UpdateStatusAccountSchema(BaseModel):
+    """
+    Schema for updating the status of an account.
+
+    This schema includes the account ID and the new status to be set.
+    """
+    account_id: str
+    status: str
+    reason: str | None = None
+
+    class Config:
+        validate_assignment = True

@@ -1,5 +1,16 @@
 from utilities.errors.errors import NotFound, BadRequest
 
+class AccountRepositoryException(Exception):
+    """Base exception for account repository errors."""
+    def __init__(self, message: str = "An error occurred in the account repository."):
+        super().__init__(message)
+
+
+class AccountRepositoryValidationException(BadRequest):
+    """Exception raised for validation errors in the account repository."""
+    def __init__(self, message: str = "Validation error in the account repository."):
+        super().__init__(message)
+
 
 class AccountNotFoundRepositoryException(NotFound):
     """Exception raised when an account is not found in the repository."""

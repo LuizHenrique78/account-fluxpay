@@ -1,6 +1,6 @@
 from enum import Enum
 
-from utilities.frameworks.base_entity.base_entity import BaseEntity
+from utilities.cross_cutting.domain.entities.base_entity import BaseEntity
 
 
 class AccountStatus(str, Enum):

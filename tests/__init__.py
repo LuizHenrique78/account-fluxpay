@@ -1,0 +1,3 @@
+from src.config.dependency_start import start_account_dependencies
+
+start_account_dependencies()

@@ -5,4 +5,4 @@ class CustomConfig(EnvConfig):
     ...
 
 
-ENVIRONMENT = CustomConfig(environment=Environment.DEVELOPMENT)
+ENVIRONMENT = CustomConfig()
