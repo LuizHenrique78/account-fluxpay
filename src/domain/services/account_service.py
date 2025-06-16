@@ -41,7 +41,7 @@ class AccountService:
         self.account_repository = account_repository
         self._process = Process("service")
 
-    def create_account(self, account_data: Account) -> SuccessResponse | ErrorResponse:
+    def create_account(self, account_data: Account) -> Account | ErrorResponse:
         """
         Creates a new account.
 
@@ -63,9 +63,9 @@ class AccountService:
             logger.error(f"Failed to create account with data: {account_data}")
             return ErrorResponse(message="Failed to create account", status_code=500, process=self._process)
 
-        return SuccessResponse(message="Account created successfully", data=account_with_id, status_code=201, process=self._process)
+        return account_with_id
 
-    def get_account(self, account_id: str)-> SuccessResponse | ErrorResponse:
+    def get_account(self, account_id: str)-> Account | ErrorResponse:
         """
         Retrieves an account by its ID.
 
@@ -73,15 +73,15 @@ class AccountService:
         :return: The Account object.
         :raises AccountNotFoundRepositoryException: If the account does not exist (from repository layer).
         """
-        account = self.account_repository.get_by_id(account_id)
+        account: Account = self.account_repository.get_by_id(account_id)
 
         if not account:
             logger.error(f"Account with ID {account_id} not found")
             return ErrorResponse(message="Account not found", status_code=404)
 
-        return SuccessResponse(status_code=201, data=account)
+        return account
 
-    def update_status(self, account_id: str, update_status: AccountStatus, reason: str | None = None) -> SuccessResponse | ErrorResponse:
+    def update_status(self, account_id: str, update_status: AccountStatus, reason: str | None = None) -> Account | ErrorResponse:
         """
         Updates the status of an account, following strict business rules.
 
@@ -109,7 +109,7 @@ class AccountService:
         if update_status == AccountStatus.SUSPENDED and not update_status:
             return ErrorResponse(message="Reason must be provided when closing an account", status_code=400, process=self._process)
 
-        account = self.account_repository.get_by_id(account_id)
+        account: Account = self.account_repository.get_by_id(account_id)
 
         if update_status == account.status:
             return ErrorResponse(message=f"Account is already in {account.status} status", status_code=400, process=self._process)
@@ -137,4 +137,4 @@ class AccountService:
         account.updated_at = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         updated_account: Account = self.account_repository.update(entity_id=account.id, entity=account)
 
-        return SuccessResponse(status_code=200, data=updated_account, message="Account status updated successfully", process=self._process)
+        return updated_account

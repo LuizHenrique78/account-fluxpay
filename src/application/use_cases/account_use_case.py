@@ -29,13 +29,13 @@ class AccountUseCase:
         :param account_data: AccountSchema object containing tenant_id and owner_id.
         :return: The created Account object.
         """
-        account = Account(tenant_id=account_data.tenant_id, owner_id=account_data.owner_id, status=AccountStatus.ACTIVE)
-        response: SuccessResponse | ErrorResponse  = self.account_service.create_account(account)
-        response.process = self._process
-        if isinstance(response, SuccessResponse):
-            response.data = response.data.model_dump(exclude_none=True)
+        account_data = Account(tenant_id=account_data.tenant_id, owner_id=account_data.owner_id, status=AccountStatus.ACTIVE)
+        account: Account | ErrorResponse  = self.account_service.create_account(account_data)
 
-        return response
+        if isinstance(account, Account):
+            return SuccessResponse(status_code=200, data=account, message="Account created successfully")
+
+        return account
 
     def get_account(self, account_id: str)-> SuccessResponse | ErrorResponse:
         """
@@ -44,12 +44,12 @@ class AccountUseCase:
         :param account_id: The unique identifier of the account.
         :return: Account object if found, otherwise None.
         """
-        response: SuccessResponse | ErrorResponse = self.account_service.get_account(account_id)
-        response.process = self._process
-        if isinstance(response, SuccessResponse):
-            response.data = response.data.model_dump(exclude_none=True)
+        account: Account | ErrorResponse = self.account_service.get_account(account_id)
 
-        return response
+        if isinstance(account, Account):
+            return SuccessResponse(status_code=200, data=account)
+
+        return account
 
     def update_status(self, update_status_schema: UpdateStatusAccountSchema) -> SuccessResponse | ErrorResponse:
         """
@@ -80,13 +80,13 @@ class AccountUseCase:
         Returns:
             Account | None: The updated Account object if successful, or None if update failed.
         """
-        response: SuccessResponse | ErrorResponse = self.account_service.update_status(
+        account: Account | ErrorResponse = self.account_service.update_status(
             account_id=update_status_schema.account_id,
             update_status=AccountStatus(update_status_schema.status),
             reason=update_status_schema.reason
         )
-        response.process = self._process
-        if isinstance(response, SuccessResponse):
-            response.data = response.data.model_dump(exclude_none=True)
 
-        return response
+        if isinstance(account, SuccessResponse):
+            return SuccessResponse(status_code=200, data=account)
+
+        return account
