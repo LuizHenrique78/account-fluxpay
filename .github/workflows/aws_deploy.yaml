@@ -26,9 +26,8 @@ jobs:
     - name: Install Serverless Framework
       run: npm install -g serverless@3
 
-    # Aqui não precisa mais substituir no requirements.txt com sed,
-    # pois usaremos variável de ambiente direto no requirements.txt
-    # e o plugin irá ler e passar para o pip.
+    - name: Install Serverless Python Requirements plugin
+      run: serverless plugin install -n serverless-python-requirements
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v3
