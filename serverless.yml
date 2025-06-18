@@ -1,0 +1,39 @@
+service: my-python-lambda
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: us-east-1
+
+plugins:
+  - serverless-python-requirements
+
+functions:
+  create_account:
+    handler: main.lambda_create_account
+    events:
+      - http:
+          path: accounts/create
+          method: post
+
+  get_account:
+    handler: main.lambda_get_account
+    events:
+      - http:
+          path: accounts/{account_id}
+          method: get
+
+  update_status:
+    handler: main.lambda_update_status
+    events:
+      - http:
+          path: accounts/update_status
+          method: patch
+
+custom:
+  pythonRequirements:
+    dockerizePip: true     # Usa Docker para empacotamento cross-platform (recomendado)
+    slim: true             # Otimiza e reduz tamanho do pacote final
+    layer: false           # false se quiser empacotar tudo junto no deploy (true cria layer)
+    useStaticCache: true   # Usa cache para acelerar builds
+    noDeploy: []           # Você pode ignorar libs específicas, vazio aqui
