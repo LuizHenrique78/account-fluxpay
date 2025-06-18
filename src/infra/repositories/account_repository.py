@@ -1,9 +1,10 @@
-from utilities.cross_cutting.infra.repositories.firestore_base_repository import FirestoreBaseRepository
+from utilities.cross_cutting.infra.repositories.dynamodb_base_repository import DynamoDBBaseRepository
+
 from utilities.depency_injections.injection_manager import utilities_injections
 from src.domain.entity.account import Account
 
 @utilities_injections
-class AccountRepository(FirestoreBaseRepository[Account]):
+class AccountRepository(DynamoDBBaseRepository[Account]):
     """
     Repository for managing Account entities in Firestore.
 
@@ -32,4 +33,4 @@ class AccountRepository(FirestoreBaseRepository[Account]):
 
         Automatically injects dependencies via utilities_injections.
         """
-        super().__init__(collection_name="accounts", model_class=Account)
+        super().__init__(table_name="account-table", model_class=Account)
