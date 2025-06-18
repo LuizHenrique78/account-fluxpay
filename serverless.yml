@@ -15,21 +15,21 @@ functions:
     handler: main.lambda_create_account
     events:
       - httpApi:
-          path: accounts/create
+          path: /accounts/create
           method: post
 
   get_account:
     handler: main.lambda_get_account
     events:
       - httpApi:
-          path: accounts/{accountId}
+          path: /accounts/{accountId}
           method: get
 
   update_status:
     handler: main.lambda_update_status
     events:
       - httpApi:
-          path: accounts/update_status
+          path: /accounts/update_status
           method: patch
 
 custom:
