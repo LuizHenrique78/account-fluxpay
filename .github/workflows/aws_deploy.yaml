@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token para acesso privado no requirements
+      GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}  # Token para acesso privado no requirements
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -39,7 +39,7 @@ jobs:
 
     - name: Deploy with Serverless
       env:
-        GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # variável para o pip usar na lib privada
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
       run: |
         # Garante que variável GIT_TOKEN estará disponível para pip
         export GIT_TOKEN=$GITHUB_TOKEN
