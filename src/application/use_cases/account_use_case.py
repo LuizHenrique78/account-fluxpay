@@ -56,7 +56,7 @@ class AccountUseCase:
         account: Account | ErrorResponse = self.account_service.create_account(account_data)
 
         if isinstance(account, Account):
-            return SuccessResponse(status_code=200, data=account, message="Account created successfully")
+            return SuccessResponse(status_code=200, body=account, message="Account created successfully")
 
         return account
 
@@ -74,7 +74,7 @@ class AccountUseCase:
         account: Account | ErrorResponse = self.account_service.get_account(account_id)
 
         if isinstance(account, Account):
-            return SuccessResponse(status_code=200, data=account)
+            return SuccessResponse(status_code=200, body=account)
 
         return account
 
@@ -111,6 +111,6 @@ class AccountUseCase:
         )
 
         if isinstance(account, Account):
-            return SuccessResponse(status_code=200, data=account, message="Account status updated successfully")
+            return SuccessResponse(status_code=200, body=account, message="Account status updated successfully")
 
         return account
