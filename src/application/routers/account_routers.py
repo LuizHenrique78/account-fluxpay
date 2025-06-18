@@ -2,18 +2,20 @@ from utilities.cross_cutting.application.routers.http_response_adapter import to
 from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
 from utilities.depency_injections.injection_manager import InjectionManager
 from utilities.frameworks.deployment_decorator import deployable
+from utilities.frameworks.deployment_target import DeploymentTarget
 
 from src.application.schemas.acchount_schema import AccountSchema, GetAccountSchema, UpdateStatusAccountSchema
 from src.config.dependency_start import start_account_dependencies
 from src.application.use_cases.account_use_case import AccountUseCase
 
-# Initialize dependency injection for the application
 start_account_dependencies()
 account_use_case = InjectionManager.get_dependency(AccountUseCase)
 
+LAMBDA_TARGET = DeploymentTarget.LAMBDA
+FASTAPI_TARGET = DeploymentTarget.FASTAPI
 
 @deployable(
-    ["cloudfunction", "fastapi"],
+    [LAMBDA_TARGET],
     methods=["POST"],
     schema_cls=AccountSchema,
     source="json",
@@ -46,11 +48,11 @@ def create_account(account_schema: AccountSchema):
 
 
 @deployable(
-    ["cloudfunction", "fastapi"],
+    [LAMBDA_TARGET],
     methods=["GET"],
     schema_cls=GetAccountSchema,
-    source="args",
-    route="/accounts/get"
+    source="path",
+    route="/accounts/{account_id}"
 )
 def get_account(get_schema: GetAccountSchema):
     """
@@ -79,7 +81,7 @@ def get_account(get_schema: GetAccountSchema):
 
 
 @deployable(
-    ["cloudfunction", "fastapi"],
+    [LAMBDA_TARGET],
     methods=["PATCH"],
     schema_cls=UpdateStatusAccountSchema,
     source="json",

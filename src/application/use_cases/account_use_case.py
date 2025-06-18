@@ -1,4 +1,4 @@
-from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse, Process
+from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
 from utilities.depency_injections.injection_manager import utilities_injections
 
 from src.application.schemas.acchount_schema import AccountSchema, UpdateStatusAccountSchema
@@ -31,7 +31,7 @@ class AccountUseCase:
             account_service (AccountService): Domain service handling business logic for accounts.
         """
         self.account_service = account_service
-        self._process = Process("use_case")
+
 
     def create_account(self, account_data: AccountSchema) -> SuccessResponse | ErrorResponse:
         """

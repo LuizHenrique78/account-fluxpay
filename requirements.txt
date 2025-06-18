@@ -10,4 +10,4 @@ fastapi==0.115.12
 uvicorn==0.34.3
 google-cloud-firestore==2.21.0
 mangum==0.17.0
-git+https://${GITHUB_TOKEN}@github.com/LuizHenrique78/utilities.git@1.1.4#egg=utilities
+git+https://${GITHUB_TOKEN}@github.com/LuizHenrique78/utilities.git@feat/add-handlers#egg=utilities

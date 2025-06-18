@@ -1,0 +1,46 @@
+name: Deploy AWS Lambda with Serverless
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token para acesso privado no requirements
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js (para Serverless Framework)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Serverless Framework
+      run: npm install -g serverless
+
+    # Aqui não precisa mais substituir no requirements.txt com sed,
+    # pois usaremos variável de ambiente direto no requirements.txt
+    # e o plugin irá ler e passar para o pip.
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy with Serverless
+      env:
+        GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # variável para o pip usar na lib privada
+      run: |
+        # Garante que variável GIT_TOKEN estará disponível para pip
+        export GIT_TOKEN=$GITHUB_TOKEN
+        serverless deploy --stage prod
