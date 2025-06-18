@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AccountSchema(BaseModel):
@@ -22,10 +22,11 @@ class GetAccountSchema(BaseModel):
     Inherits from AccountSchema and can be extended with additional fields
     specific to retrieval operations if needed.
     """
-    account_id: str
+    account_id: str = Field(alias="accountId")
 
     class Config:
         validate_assignment = True
+        populate_by_name = True
 
 
 
