@@ -52,7 +52,7 @@ def create_account(account_schema: AccountSchema):
     methods=["GET"],
     schema_cls=GetAccountSchema,
     source="path",
-    route="/accounts/{account_id}"
+    route="/accounts/{accountId}"
 )
 def get_account(get_schema: GetAccountSchema):
     """

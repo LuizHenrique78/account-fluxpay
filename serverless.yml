@@ -22,7 +22,7 @@ functions:
     handler: main.lambda_get_account
     events:
       - httpApi:
-          path: accounts/{account_id}
+          path: accounts/{accountId}
           method: get
 
   update_status:
@@ -34,8 +34,8 @@ functions:
 
 custom:
   pythonRequirements:
-    dockerizePip: true     # Usa Docker para empacotamento cross-platform (recomendado)
-    slim: true             # Otimiza e reduz tamanho do pacote final
-    layer: false           # false se quiser empacotar tudo junto no deploy (true cria layer)
-    useStaticCache: true   # Usa cache para acelerar builds
-    noDeploy: []           # Você pode ignorar libs específicas, vazio aqui
+    dockerizePip: true
+    slim: true
+    layer: false
+    useStaticCache: true
+    noDeploy: []
