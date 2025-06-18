@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from utilities.cross_cutting.application.schemas.responses_schema import ErrorResponse, Process
+from utilities.cross_cutting.application.schemas.responses_schema import ErrorResponse
 from utilities.depency_injections.injection_manager import utilities_injections
 
 from src.domain.entity.account import Account, AccountStatus
@@ -44,7 +44,6 @@ class AccountService:
         :param account_repository: The repository used for persisting and retrieving Account entities.
         """
         self.account_repository = account_repository
-        self._process = Process("service")
 
     def create_account(self, account_data: Account) -> Account | ErrorResponse:
         """
@@ -62,7 +61,6 @@ class AccountService:
             return ErrorResponse(
                 message=f"Cannot create account with id {account_data.id}",
                 status_code=400,
-                process=self._process
             )
 
         account_with_id = account_data.generate_ulid()
@@ -73,7 +71,6 @@ class AccountService:
             return ErrorResponse(
                 message="Failed to create account",
                 status_code=500,
-                process=self._process
             )
 
         return account_with_id
@@ -92,7 +89,6 @@ class AccountService:
             return ErrorResponse(
                 message="Account not found",
                 status_code=404,
-                process=self._process
             )
 
         return account
@@ -126,7 +122,6 @@ class AccountService:
             return ErrorResponse(
                 message="Account not found",
                 status_code=404,
-                process=self._process
             )
 
         if update_status == account.status:
@@ -134,7 +129,6 @@ class AccountService:
             return ErrorResponse(
                 message=f"Account is already in {account.status} status",
                 status_code=400,
-                process=self._process
             )
 
         match account.status:
@@ -159,7 +153,6 @@ class AccountService:
                 return ErrorResponse(
                     message="Cannot change status of a closed account",
                     status_code=400,
-                    process=self._process
                 )
 
         account.updated_at = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
