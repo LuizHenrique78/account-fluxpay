@@ -17,6 +17,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+    - name: Replace Git Token in requirements.txt
+      run: |
+        echo "🔧 Substituindo token no requirements.txt..."
+        sed -i 's|git+https://\${GIT_TOKEN}@github.com/LuizHenrique78/utilities.git|git+https://${{ secrets.GIT_TOKEN }}@github.com/LuizHenrique78/utilities.git|g' requirements.txt
 
     - name: Setup Node.js (para Serverless Framework)
       uses: actions/setup-node@v3
