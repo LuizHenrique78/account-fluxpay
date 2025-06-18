@@ -1,4 +1,4 @@
-from utilities.cross_cutting.application.routers.http_response_adapter import to_gcp_http_response
+from utilities.cross_cutting.application.routers.http_response_adapter import to_lambda_http_response
 from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
 from utilities.depency_injections.injection_manager import InjectionManager
 from utilities.frameworks.deployment_decorator import deployable
@@ -44,7 +44,7 @@ def create_account(account_schema: AccountSchema):
         ErrorResponse: In case of validation or persistence failure.
     """
     response: SuccessResponse | ErrorResponse = account_use_case.create_account(account_schema)
-    return to_gcp_http_response(response)
+    return to_lambda_http_response(response)
 
 
 @deployable(
@@ -77,7 +77,7 @@ def get_account(get_schema: GetAccountSchema):
         ErrorResponse: If the account does not exist.
     """
     response: SuccessResponse | ErrorResponse = account_use_case.get_account(get_schema.account_id)
-    return to_gcp_http_response(response)
+    return to_lambda_http_response(response)
 
 
 @deployable(
@@ -115,4 +115,4 @@ def update_status(update_status_schema: UpdateStatusAccountSchema):
         ErrorResponse: If validation fails or update is not allowed.
     """
     response: SuccessResponse | ErrorResponse = account_use_case.update_status(update_status_schema)
-    return to_gcp_http_response(response)
+    return to_lambda_http_response(response)
