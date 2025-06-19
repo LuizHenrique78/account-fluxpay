@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from utilities.cross_cutting.application.schemas.responses_schema import ErrorResponse
+from utilities.cross_cutting.application.schemas.responses_schema import ErrorResponse, ErrorMessage
 from utilities.depency_injections.injection_manager import utilities_injections
 
 from src.domain.entity.account import Account, AccountStatus
@@ -59,6 +59,7 @@ class AccountService:
         if account_data.id is not None:
             logger.warning(f"Account creation failed: ID should not be provided. Received ID: {account_data.id}")
             return ErrorResponse(
+                body=ErrorMessage(error="Internal Server Error"),
                 message=f"Cannot create account with id {account_data.id}",
                 status_code=400,
             )
@@ -69,7 +70,8 @@ class AccountService:
         if not id:
             logger.error(f"Failed to persist account: {account_data}")
             return ErrorResponse(
-                message="Failed to create account",
+                body=ErrorMessage(error="Failed to create account"),
+                message="Internal Server Error",
                 status_code=500,
             )
 
@@ -87,6 +89,7 @@ class AccountService:
         if not account:
             logger.error(f"Account with ID {account_id} not found")
             return ErrorResponse(
+                body=ErrorMessage(error="Account not found"),
                 message="Account not found",
                 status_code=404,
             )
@@ -119,7 +122,9 @@ class AccountService:
 
         if not account:
             logger.error(f"Account with ID {account_id} not found for status update")
+
             return ErrorResponse(
+                body=ErrorMessage(error="Account not found"),
                 message="Account not found",
                 status_code=404,
             )
@@ -127,8 +132,9 @@ class AccountService:
         if update_status == account.status:
             logger.warning(f"Account {account_id} is already in status {account.status}")
             return ErrorResponse(
-                message=f"Account is already in {account.status} status",
-                status_code=400,
+                body=ErrorMessage(error="Account is already in {account.status} status"),
+                message=f"Bad Request",
+                status_code=409,
             )
 
         match account.status:
@@ -151,7 +157,8 @@ class AccountService:
             case AccountStatus.CLOSED:
                 logger.error(f"Attempted status change on CLOSED account {account_id}")
                 return ErrorResponse(
-                    message="Cannot change status of a closed account",
+                    body=ErrorMessage(error="Cannot change status of a closed account"),
+                    message="Bad Request",
                     status_code=400,
                 )
 
