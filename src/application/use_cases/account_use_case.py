@@ -74,7 +74,7 @@ class AccountUseCase:
         account: Account | ErrorResponse = self.account_service.get_account(account_id)
 
         if isinstance(account, Account):
-            return SuccessResponse(status_code=200, body=account)
+            return SuccessResponse(status_code=200, body=account, message="Account retrieved successfully")
 
         return account
 
