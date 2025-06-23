@@ -42,7 +42,6 @@ class Account(BaseEntity):
             status=AccountStatus.ACTIVE
         )
     """
-
     tenant_id: str
     owner_id: str
     status: AccountStatus
