@@ -7,7 +7,7 @@ from utilities.logger.logail_handler import LogtailHandler
 from src.application import routers
 from src.config.custom_config import ENVIRONMENT
 
-TARGET = os.environ.get("TARGET", "fastapi")
+TARGET = os.environ.get("TARGET", "lambda")
 
 resolver = HandlerResolver(routers, TARGET)
 app_or_functions = resolver.get_handler()
