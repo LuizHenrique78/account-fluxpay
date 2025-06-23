@@ -81,14 +81,13 @@ def generate_serverless_yaml(lambda_functions):
     for func_name, details in lambda_functions.items():
         function_config = {
             "handler": f"main.lambda_{func_name}",
-            "runtime": "python3.11",
             "events": [],
         }
 
         for method in details["methods"]:
             event = {
-                "http": {
-                    "path": details["route"].lstrip("/"),
+                "httpApi": {                      # mudou de "http" para "httpApi"
+                    "path": details["route"],
                     "method": method.lower(),
                 }
             }
@@ -97,16 +96,33 @@ def generate_serverless_yaml(lambda_functions):
         functions[func_name] = function_config
 
     serverless_config = {
-        "service": "my-python-lambda",
+        "service": "account",  # seu serviço hardcoded como "account"
+        "frameworkVersion": "3",
         "provider": {
             "name": "aws",
-            "region": "us-east-1",
             "runtime": "python3.11",
+            "region": "us-east-1",
+            "environment": {
+                "TARGET": "lambda",
+                "ENVIRONMENT": "${env:ENVIRONMENT}",
+            },
         },
+        "plugins": [
+            "serverless-python-requirements"
+        ],
         "functions": functions,
+        "custom": {
+            "pythonRequirements": {
+                "dockerizePip": True,
+                "slim": True,
+                "layer": False,
+                "useStaticCache": True,
+                "noDeploy": [],
+            }
+        }
     }
 
-    return serverless_config  # retorna o dict, mas não grava arquivo aqui
+    return serverless_config
 
 
 def main():

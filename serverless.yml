@@ -1,7 +1,5 @@
 service: account
-
 frameworkVersion: '3'
-
 provider:
   name: aws
   runtime: python3.11
@@ -9,32 +7,27 @@ provider:
   environment:
     TARGET: lambda
     ENVIRONMENT: ${env:ENVIRONMENT}
-
 plugins:
-  - serverless-python-requirements
-
+- serverless-python-requirements
 functions:
   create_account:
     handler: main.lambda_create_account
     events:
-      - httpApi:
-          path: /accounts/create
-          method: post
-
+    - httpApi:
+        path: /accounts/create
+        method: post
   get_account:
     handler: main.lambda_get_account
     events:
-      - httpApi:
-          path: /accounts/{accountId}
-          method: get
-
+    - httpApi:
+        path: /accounts/{accountId}
+        method: get
   update_status:
     handler: main.lambda_update_status
     events:
-      - httpApi:
-          path: /accounts/update_status
-          method: patch
-
+    - httpApi:
+        path: /accounts/update_status
+        method: patch
 custom:
   pythonRequirements:
     dockerizePip: true
