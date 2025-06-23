@@ -1,4 +1,4 @@
-service: my-python-lambda
+service: account
 
 frameworkVersion: '3'
 
@@ -6,6 +6,9 @@ provider:
   name: aws
   runtime: python3.11
   region: us-east-1
+  environment:
+    TARGET: lambda
+    ENVIRONMENT: ${env:ENVIRONMENT}
 
 plugins:
   - serverless-python-requirements

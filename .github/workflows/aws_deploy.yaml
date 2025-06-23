@@ -4,19 +4,21 @@ on:
   push:
     branches:
       - main
+      - prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
-      GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}  # Token para acesso privado no requirements
+      GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
     - name: Replace Git Token in requirements.txt
       run: |
         echo "🔧 Substituindo token no requirements.txt..."
@@ -40,10 +42,20 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+    - name: Set ENVIRONMENT variable
+      id: env_setup
+      run: |
+        if [[ "${{ github.ref_name }}" == "prod" ]]; then
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+        else
+          echo "ENVIRONMENT=test" >> $GITHUB_ENV
+        fi
+
     - name: Deploy with Serverless
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        ENVIRONMENT: ${{ env.ENVIRONMENT }}
       run: |
-        # Garante que variável GIT_TOKEN estará disponível para pip
         export GIT_TOKEN=$GITHUB_TOKEN
-        serverless deploy --stage prod
+        echo "🌍 Ambiente selecionado: $ENVIRONMENT"
+        serverless deploy --stage $ENVIRONMENT
