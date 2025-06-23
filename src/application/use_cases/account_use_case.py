@@ -1,12 +1,11 @@
 from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
-from utilities.depency_injections.injection_manager import utilities_injections
+from utilities.cross_cutting.domain.builders.fingerprint_builder import FingerprintBuilder
 
 from src.application.schemas.acchount_schema import AccountSchema, UpdateStatusAccountSchema
 from src.domain.entity.account import Account, AccountStatus
 from src.domain.services.account_service import AccountService
 
 
-@utilities_injections
 class AccountUseCase:
     """
     Application Use Case layer for Account operations.
@@ -23,17 +22,14 @@ class AccountUseCase:
     - Account status updates with validation.
     """
 
-    def __init__(self, account_service: AccountService):
+    def __init__(self, account_service: AccountService) -> None:
         """
         Initializes the AccountUseCase with the required service dependency.
-
-        Args:
-            account_service (AccountService): Domain service handling business logic for accounts.
         """
         self.account_service = account_service
 
 
-    def create_account(self, account_data: AccountSchema) -> SuccessResponse | ErrorResponse:
+    def create_account(self, account_data: AccountSchema, function) -> SuccessResponse | ErrorResponse:
         """
         Creates a new account with default status ACTIVE.
 
@@ -51,7 +47,8 @@ class AccountUseCase:
         account_data = Account(
             tenant_id=account_data.tenant_id,
             owner_id=account_data.owner_id,
-            status=AccountStatus.ACTIVE
+            status=AccountStatus.ACTIVE,
+            fingerprint=FingerprintBuilder.from_handler_function(function)
         )
         account: Account | ErrorResponse = self.account_service.create_account(account_data)
 

@@ -1,4 +1,4 @@
-from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse
+from utilities.cross_cutting.application.schemas.responses_schema import SuccessResponse, ErrorResponse, ErrorMessage
 from utilities.depency_injections.injection_manager import InjectionManager
 
 from src.domain.entity.account import Account, AccountStatus
@@ -64,8 +64,9 @@ def test_update_status_closed_to_active_error():
     response: ErrorResponse  = service.update_status(account.id, AccountStatus.ACTIVE)
 
     if isinstance(response, ErrorResponse):
-        assert response.message == "Cannot change status of a closed account"
+        assert response.message == "Bad Request"
         assert response.status_code == 400
+        assert response.body == ErrorMessage(error="Cannot change status of a closed account")
 
 
 
@@ -74,5 +75,6 @@ def test_update_status_active_to_active_error():
 
     response: ErrorResponse = service.update_status(account.id, AccountStatus.ACTIVE)
     if isinstance(response, ErrorResponse):
-        assert response.message == f"Account is already in {account.status} status"
-        assert response.status_code == 400
+        assert response.message == "Bad Request"
+        assert response.status_code == 409
+        assert response.body == ErrorMessage(error=f"Account is already in {account.status} status")

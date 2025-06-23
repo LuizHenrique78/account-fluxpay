@@ -15,7 +15,7 @@ def _create_account():
         owner_id="owner456"
     )
     account = account_use_case.create_account(model)
-    return account.data
+    return account.body
 
 
 def test_create_account():
@@ -29,7 +29,7 @@ def test_create_account():
     assert isinstance(response, SuccessResponse)
     assert response.status_code == 200
     assert response.message == "Account created successfully"
-    assert response.data is not None
+    assert response.body is not None
 
 
 def test_get_account():
@@ -38,10 +38,10 @@ def test_get_account():
 
     assert response is not None
     assert response.status_code == 200
-    assert response.data.id is not None
-    assert response.data.tenant_id == account.tenant_id
-    assert response.data.owner_id == account.owner_id
-    assert response.data.created_at is not None
+    assert response.body.id is not None
+    assert response.body.tenant_id == account.tenant_id
+    assert response.body.owner_id == account.owner_id
+    assert response.body.created_at is not None
 
 
 def test_update_status_active_to_suspend():
@@ -54,13 +54,13 @@ def test_update_status_active_to_suspend():
 
     assert response is not None
     assert response_updated.status_code == 200
-    assert response_updated.data.id == account.id
-    assert response_updated.data.status == AccountStatus.SUSPENDED
-    assert response_updated.data.suspension_reason == "Testing suspension"
-    assert response_updated.data.tenant_id == account.tenant_id
-    assert response_updated.data.owner_id == account.owner_id
-    assert response_updated.data.created_at is not None
-    assert response_updated.data.updated_at is not None
+    assert response_updated.body.id == account.id
+    assert response_updated.body.status == AccountStatus.SUSPENDED
+    assert response_updated.body.suspension_reason == "Testing suspension"
+    assert response_updated.body.tenant_id == account.tenant_id
+    assert response_updated.body.owner_id == account.owner_id
+    assert response_updated.body.created_at is not None
+    assert response_updated.body.updated_at is not None
 
 
 def test_update_status_closed_to_active_error():
@@ -72,7 +72,8 @@ def test_update_status_closed_to_active_error():
 
     response: ErrorResponse = account_use_case.update_status(new_status_schema)
     assert response.status_code == 400
-    assert response.message == "Cannot change status of a closed account"
+    assert response.message == "Bad Request"
+    assert response.body.error == "Cannot change status of a closed account"
 
 
 def test_update_status_active_to_active_error():
@@ -81,5 +82,6 @@ def test_update_status_active_to_active_error():
 
     response: ErrorResponse = account_use_case.update_status(schema_update_status)
 
-    assert response.status_code == 400
-    assert response.message == f"Account is already in {account.status} status"
+    assert response.status_code == 409
+    assert response.message == "Bad Request"
+    assert response.body.error == f"Account is already in {account.status} status"
