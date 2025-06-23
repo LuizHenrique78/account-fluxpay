@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 
 from utilities.cross_cutting.application.schemas.responses_schema import ErrorResponse, ErrorMessage
-from utilities.depency_injections.injection_manager import utilities_injections
 
 from src.domain.entity.account import Account, AccountStatus
 
@@ -10,7 +9,7 @@ from src.infra.repositories.account_repository import AccountRepository
 
 logger = logging.getLogger(__name__)
 
-@utilities_injections
+
 class AccountService:
     """
     Service layer responsible for managing accounts and enforcing business rules.
@@ -85,7 +84,7 @@ class AccountService:
         :return: The Account object if found, or ErrorResponse if not found.
         """
         account: Account = self.account_repository.get_by_id(account_id)
-
+        # TODO: cahnge satatus code to 204
         if not account:
             logger.error(f"Account with ID {account_id} not found")
             return ErrorResponse(
@@ -132,7 +131,7 @@ class AccountService:
         if update_status == account.status:
             logger.warning(f"Account {account_id} is already in status {account.status}")
             return ErrorResponse(
-                body=ErrorMessage(error="Account is already in {account.status} status"),
+                body=ErrorMessage(error=f"Account is already in {account.status} status"),
                 message=f"Bad Request",
                 status_code=409,
             )

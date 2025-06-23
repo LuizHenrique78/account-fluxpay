@@ -31,5 +31,3 @@ def start_account_dependencies():
 
     # Account-related dependencies
     InjectionManager.add_dependency(AccountRepository, AccountRepository())
-    InjectionManager.add_dependency(AccountService, AccountService())
-    InjectionManager.add_dependency(AccountUseCase, AccountUseCase())

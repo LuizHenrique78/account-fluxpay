@@ -32,9 +32,9 @@ def test_create_account():
     event = event_data.model_dump(by_alias=True)
 
     context = FakeContext()
-    response: tuple[dict, int] = lambda_create_account(event, context)
-    assert response[1] == 200, f"Expected status code 200, got {response[1]}"
-    assert "Account created successfully" in response[0]["message"], "Expected success message not found"
+    response: dict = lambda_create_account(event, context)
+    assert response["statusCode"] == 200, f"Expected status code 200, got {response[1]}"
+    assert "Account created successfully" in response["message"], "Expected success message not found"
 
 
 

@@ -7,15 +7,20 @@ from utilities.frameworks.deployment_target import DeploymentTarget
 from src.application.schemas.acchount_schema import AccountSchema, GetAccountSchema, UpdateStatusAccountSchema
 from src.config.dependency_start import start_account_dependencies
 from src.application.use_cases.account_use_case import AccountUseCase
+from src.domain.services.account_service import AccountService
+from src.infra.repositories.account_repository import AccountRepository
 
 start_account_dependencies()
-account_use_case = InjectionManager.get_dependency(AccountUseCase)
+
+account_use_case = AccountUseCase(
+    account_service=AccountService(account_repository=InjectionManager.get_dependency(AccountRepository))
+)
 
 LAMBDA_TARGET = DeploymentTarget.LAMBDA
 FASTAPI_TARGET = DeploymentTarget.FASTAPI
 
 @deployable(
-    [LAMBDA_TARGET],
+    [LAMBDA_TARGET, FASTAPI_TARGET],
     methods=["POST"],
     schema_cls=AccountSchema,
     source="json",
@@ -43,7 +48,7 @@ def create_account(account_schema: AccountSchema):
         SuccessResponse: Account created successfully.
         ErrorResponse: In case of validation or persistence failure.
     """
-    response: SuccessResponse | ErrorResponse = account_use_case.create_account(account_schema)
+    response: SuccessResponse | ErrorResponse = account_use_case.create_account(account_schema, create_account)
     return to_lambda_http_response(response)
 
 
