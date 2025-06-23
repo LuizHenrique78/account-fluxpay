@@ -20,7 +20,7 @@ LAMBDA_TARGET = DeploymentTarget.LAMBDA
 FASTAPI_TARGET = DeploymentTarget.FASTAPI
 
 @deployable(
-    [LAMBDA_TARGET, FASTAPI_TARGET],
+    [LAMBDA_TARGET],
     methods=["POST"],
     schema_cls=AccountSchema,
     source="json",
